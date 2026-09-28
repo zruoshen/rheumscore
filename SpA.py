@@ -60,6 +60,14 @@ def calculate_basdai(
 # 2.1–3.5 high, and >3.5 very high.
 # Reference: ASAS ASDAS Calculator, https://www.asas-group.org/instruments/asdas-calculator/.
 def asdas_activity_state(score):
+    if isinstance(score, pd.Series):
+        result = pd.Series(pd.NA, index=score.index, dtype="string", name=score.name)
+        valid = score.notna()
+        result.loc[valid & score.lt(1.3)] = "inactive"
+        result.loc[valid & score.ge(1.3) & score.lt(2.1)] = "low"
+        result.loc[valid & score.ge(2.1) & score.le(3.5)] = "high"
+        result.loc[valid & score.gt(3.5)] = "very high"
+        return result
     if pd.isna(score):
         return pd.NA
     if score < 1.3:
@@ -76,6 +84,12 @@ def asdas_activity_state(score):
 # Reference: Ramiro S, et al. Ann Rheum Dis. 2023;82:19–34.
 # doi:10.1136/ard-2022-223296.
 def basdai_activity_state(score):
+    if isinstance(score, pd.Series):
+        result = pd.Series(pd.NA, index=score.index, dtype="string", name=score.name)
+        valid = score.notna()
+        result.loc[valid & score.lt(4)] = "low"
+        result.loc[valid & ~score.lt(4)] = "high"
+        return result
     if pd.isna(score):
         return pd.NA
     if score < 4:
